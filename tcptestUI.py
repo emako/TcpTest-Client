@@ -38,7 +38,7 @@ class Ui_TcpTest(object):
 		self.clearBt.setObjectName("clearBt")
 
 		self.retranslateUi(TcpTest)
-		self.sendBt.clicked.connect(self.tcp_send)
+		self.sendBt.clicked.connect(self.tcp_connect)
 		self.clearBt.clicked.connect(self.clearText)
 		self.exitBt.clicked.connect(TcpTest.close)
 		QtCore.QMetaObject.connectSlotsByName(TcpTest)
@@ -48,7 +48,7 @@ class Ui_TcpTest(object):
 		TcpTest.setWindowTitle("TcpTest - Client")
 		TcpTest.setWindowIcon(QIcon('tcptest.ico'))
 		self.sendBt.setText("Send")
-		#self.sendEdit.setText('{"cmd":48}\n')
+		self.sendEdit.setText('{"cmd":48}\n')
 		self.addrEdit.setText(socket.gethostbyname(socket.gethostname()))
 		self.portEdit.setText("60001")
 		self.addrlabel.setText("Addr")
@@ -62,25 +62,23 @@ class Ui_TcpTest(object):
 		self.sendEdit.clear()
 		self.recvEdit.clear()
 		
-	def tcp_send(self):
+	def tcp_connect(self):
 		def TcpClient(addr, port, data):
 			buffsize = 2048
 			try:
 				tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				tcp_client.connect((addr, port))
 				tcp_client.send(data.encode())
-				data = tcp_client.recv(buffsize).decode()
+				recv_data = tcp_client.recv(buffsize).decode()
+				tcp_client.close()
 			except socket.error:
 				print('TcpClient: fail to setup socket connection.')
-			tcp_client.close()
-			return data
+				recv_data = None
+			return recv_data
 
 		addr = self.addrEdit.text()
 		port = int(self.portEdit.text())
 		send_data = self.sendEdit.toPlainText()
 		recv_data = TcpClient(addr, port, send_data)
-		self.recvEdit.append(recv_data)
-
-
-	
-
+		if (recv_data != '') & (recv_data != None):
+			self.recvEdit.append(recv_data)
